@@ -1,0 +1,6 @@
+/*!
+ * mousewheelStopPropagation.js v1.3.0
+ * (c) 2014, Benoit Asselin contact(at)ab-d.fr
+ * MIT License
+ */
+(function(n){"use strict";var t={duration:200,easing:"linear"};n.fn.mousewheelStopPropagation=function(i){function f(n){n.preventDefault();n.stopPropagation();"function"==typeof i.wheelstop&&i.wheelstop(n)}function e(n,r){i.emulateNaturalScrolling?n.stop(!0).animate({scrollTop:r},t):n.get(0).scrollTop=r}i=n.extend({wheelstop:null,emulateNaturalScrolling:!0},i);var o=navigator.userAgent.toLowerCase(),s=/(trident|msie)/.test(o),u=document.documentElement,r="mousewheel";return("onmousewheel"in u?r="mousewheel":"onwheel"in u?r="wheel":"DOMMouseScroll"in u&&(r="DOMMouseScroll"),!r)?this:this.each(function(){var i=this,t=n(i);t.on(r,function(n){var c=n.originalEvent,o=i.scrollTop,h=i.scrollHeight-t.outerHeight(),r=-c.wheelDelta,u;isNaN(r)&&(r=c.deltaY);u=r<0;u&&o<=0||!u&&o>=h?f(n):s&&(u&&-r>o?(e(t,0),f(n)):!u&&r>h-o&&(e(t,h),f(n)))})})}})(jQuery,window)

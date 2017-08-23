@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title></title>
+	<link rel="stylesheet" href="./css/style.css"/>
+	<style>
+		html, body {
+			margin: 0;
+			padding: 0;
+			height: 100%;
+		}
+
+		body {
+			padding: 2px;
+		}
+
+		#sankey {
+			width: 100%;
+			height: 1000px
+		}
+	</style>
+</head>
+<body>
+	<h3>Tutu.ru Conversion Flow Chart</h3>
+	<div id="sankey"></div>
+
+	<script src="../ext/raphael.js"></script>
+	<script src="../ext/jquery.js"></script>
+	<script src="../js/sankey.js"></script>
+	<script src="rawdata.js"></script>
+	<script type='text/javascript'>
+		$(()=>{
+			var sankey = new Sankey();
+
+			var name_conversions = {
+				"TSearch": "Ticket Search",
+				"Tarifs Filter": "Tarifs Filter",
+				"Bio-conversion": "Biomass processing",
+				"Payment": "Payment",
+				"H2": "Hydrogen",
+				"Useful district heat": "Delivered heat",
+				"Heating and cooling - homes": "Home heating & cooling",
+				"Heating and cooling - commercial": "Office heating & cooling",
+				"Lighting & appliances - homes": "Home lighting & appliances",
+				"Lighting & appliances - commercial": "Office lighting & appliances",
+			};
+
+			sankey.convert_box_description_labels_callback = function (name) {
+				console.log(">" + name + "<");
+				var alternative_name = name_conversions[name];
+				if (alternative_name == null) alternative_name = name;
+				return alternative_name;
+			};
+
+			sankey.stack(0, [
+				"Pumped heat",
+				"Solar",
+				"Wind",
+				"Tidal",
+				"Wave",
+				"Geothermal",
+				"Hydro",
+				"Electricity imports",
+				"Nuclear",
+				"Coal reserves",
+				"Coal imports",
+				"Biomass imports",
+				"Oil reserves",
+				"Oil imports",
+				"Biofuel imports",
+				"Gas reserves",
+				"Gas imports",
+				"UK land based bioenergy",
+				"Agricultural 'waste'",
+				"Other waste",
+				"Marine algae"
+			]);
+
+			sankey.stack(1, ["Coal"], "Coal reserves");
+			sankey.stack(1, ["Oil"], "Oil reserves");
+			sankey.stack(1, ["Ngas"], "Gas reserves");
+			sankey.stack(1, ["Bio-conversion"], "UK land based bioenergy");
+
+			sankey.stack(2, ["Solar Thermal", "Solar PV"], "Solar");
+			sankey.stack(2, ["Solid", "Liquid", "Gas"], "Coal");
+
+			sankey.stack(3, ["Thermal generation", "CHP"], "Nuclear");
+
+			sankey.stack(4, ["Electricity grid", "District heating"], "Wind");
+
+			sankey.stack(5, ["H2 conversion"], "Electricity grid");
+
+			sankey.stack(6, ["H2"], "H2 conversion");
+
+			sankey.stack(7, [
+				"Heating and cooling - homes",
+				"Heating and cooling - commercial",
+				"Lighting & appliances - homes",
+				"Lighting & appliances - commercial",
+				"Industry",
+				"Road transport",
+				"Rail transport",
+				"Domestic aviation",
+				"International aviation",
+				"National navigation",
+				"International shipping",
+				"Agriculture",
+				"Geosequestration",
+				"Over generation / exports",
+				"Losses"
+			]);
+
+			// Nudge
+			sankey.nudge_boxes_callback = function () {
+				sankey.boxes["Losses"].y = (sankey.boxes["Marine algae"].b() - sankey.boxes["Losses"].size());
+			 	//sankey.boxes["Exports"].y = (sankey.boxes["Losses"].y - sankey.boxes["Exports"].size() - y_space);
+			 	//sankey.boxes["Over generation / exports"].y = (sankey.boxes["Exports"].y - sankey.boxes["Over generation / exports"].size() - y_space);
+			};
+
+			// Colours
+			sankey.setColors({
+				"Coal reserves": "#238f8a",
+				"Coal": "#238f8a",
+				"Coal imports": "#238f8a",
+
+				"Oil reserves": "#ffa309",
+				"Oil": "#ffa309",
+				"Oil imports": "#ffa309",
+
+				"Gas reserves": "#DDD4C4",
+				"Ngas": "#DDD4C4",
+				"Gas imports": "#DDD4C4",
+
+				"Solar": "#fff137",
+				"Solar Thermal": "#fff137",
+				"Solar PV": "#fff137",
+
+				"UK land based bioenergy": "#64ff82",
+				"Bio-conversion": "#64ff82",
+				"Marine algae": "#64ff82",
+				"Agricultural 'waste'": "#64ff82",
+				"Other waste": "#64ff82",
+				"Biomass imports": "#64ff82",
+				"Biofuel imports": "#64ff82",
+
+				"Solid": "#557731",
+				"Liquid": "#7D9763",
+				"Gas": "#BCC2AD",
+
+				"Electricity grid": "#00adff",
+				"Thermal generation": "#00adff",
+				"CHP": "#ff0052",
+				"Nuclear": "#E2ABDB",
+
+				"District heating": "#ff0052",
+				"Pumped heat": "#ff0052",
+				"Useful district heat": "#ff0052",
+				"CHP Heat": "#ff0052",
+
+				"Electricity imports": "#00adff",
+				"Wind": "#C7E7E6",
+				"Tidal": "#C7E7E6",
+				"Wave": "#C7E7E6",
+				"Geothermal": "#C7E7E6",
+				"Hydro": "#C7E7E6",
+
+				"H2 conversion": "#FF6FCF",
+				"Final electricity": "#00adff",
+				"Over generation / exports": "#00adff",
+				"H2": "#FF6FCF"
+			});
+
+			// Add the emissions
+//			sankey.boxes["Thermal generation"].ghg = 100;
+//			sankey.boxes["CHP"].ghg = 10;
+//			sankey.boxes["UK land based bioenergy"].ghg = -100;
+//			sankey.boxes["Heating and cooling - homes"].ghg = 20;
+
+			// Fix some of the colours
+			sankey.nudge_colours_callback = function () {
+				this.recolour(this.boxes["Losses"].left_lines, "#d4d4d4");
+				this.recolour(this.boxes["District heating"].left_lines, "#ffa309");
+				this.recolour(this.boxes["Electricity grid"].left_lines, "#1e5aff");
+			};
+
+			sankey.y_space = 20;
+			sankey.right_margin = 250;
+			sankey.left_margin = 150;
+
+			sankey.convert_flow_values_callback = flow => flow * 0.05; // Pixels per TWh
+			sankey.convert_flow_labels_callback = flow => `${Math.round(flow)} TWh/y`;
+			sankey.convert_box_value_labels_callback = flow => `${Math.round(flow)} TWh/y`;
+
+			sankey.setData(raw_data);
+			sankey.draw();
+		});
+
+	</script>
+</body>
+</html>
